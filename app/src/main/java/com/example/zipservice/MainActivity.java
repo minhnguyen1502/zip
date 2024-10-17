@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
         zipperScreenLockView.setCompleteListener(new ZipperScreenLockView.IZipperListener() {
             @Override
             public void zipperSuccess() {
-                zipperScreenLockView.setVisibility(View.INVISIBLE);
 
             }
 

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -13,6 +14,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 public class ZipperScreenLockView extends View {
     private Context mContext;
@@ -73,7 +76,7 @@ public class ZipperScreenLockView extends View {
         mBitmapZipper = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.zip)).getBitmap();
         mBitmapZipperLeft = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.left)).getBitmap();
         mBitmapZipperRight = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.right)).getBitmap();
-        mBitmapZipperBg = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.bg)).getBitmap();
+        mBitmapZipperBg = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.row)).getBitmap();
         mBitmapZipperMask = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.bg)).getBitmap();
         mBitmapBg = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.bg)).getBitmap();
     }
@@ -132,8 +135,8 @@ public class ZipperScreenLockView extends View {
         super.onDraw(canvas);
 
         if (isFirst) {
-            wSize = (double) getWidth();
-            hSize = (double) getHeight();
+            wSize = getWidth();
+            hSize = getHeight();
 
             mBitmapZipperBg = setBitmapSize(mBitmapZipperBg, wSize, wSize * ZIPPER_BG_HEIGHT / ZIPPER_BG_WIDTH);
             mBitmapZipperMask = setBitmapSize(mBitmapZipperMask, wSize, wSize * ZIPPER_MASK_HEIGHT / ZIPPER_MASK_WIDTH);
@@ -158,20 +161,20 @@ public class ZipperScreenLockView extends View {
 
         if (isTouch) {
             if ((yTouch - moveY) > 0) {
-                if (isShowBg) {
-                    Rect mSrcRectBg = new Rect(0, 0, mBitmapBg.getWidth(), mBitmapBg.getHeight());
-                    Rect mDestRectBg = new Rect(0, 0, (int) wSize, (int) hSize);
-                    canvas.drawBitmap(mBitmapBg, mSrcRectBg, mDestRectBg, mPaint);
-                }
 
-                int i = 0;
-                if (isShowBg) {
-                    i = canvas.saveLayer(0f, 0f, (float) wSize, (float) hSize, mPaint, Canvas.ALL_SAVE_FLAG);
-                }
+                Rect mSrcRectBg = new Rect(0, 0, mBitmapBg.getWidth(), mBitmapBg.getHeight());
+                Rect mDestRectBg = new Rect(0, 0, (int) wSize, (int) hSize);
+                canvas.drawBitmap(mBitmapBg, mSrcRectBg, mDestRectBg, mPaint);
+
+                int saveCount = canvas.save();
+
+                canvas.clipRect(0, (int) (yTouch - moveY), (int) wSize, (int) hSize);
 
                 Rect mSrcRectZipperBg = new Rect(0, 0, mBitmapZipperBg.getWidth(), mBitmapZipperBg.getHeight());
                 Rect mDestRectZipperBg = new Rect(0, 0, (int) wSize, (int) hSize);
                 canvas.drawBitmap(mBitmapZipperBg, mSrcRectZipperBg, mDestRectZipperBg, mPaint);
+
+                canvas.restoreToCount(saveCount);
 
                 Rect mSrcRectZipperMask = new Rect(0, 0, mBitmapZipperMask.getWidth(), mBitmapZipperMask.getHeight());
                 Rect mDestRectZipperMask = new Rect(
@@ -205,10 +208,6 @@ public class ZipperScreenLockView extends View {
                         (float) (yTouch - moveY),
                         mPaint
                 );
-
-                if (isShowBg) {
-                    canvas.restoreToCount(i);
-                }
             } else {
                 initState(canvas);
             }
@@ -219,6 +218,9 @@ public class ZipperScreenLockView extends View {
 
 
     private void initState(Canvas canvas) {
+        Rect mSrcRectBg = new Rect(0, 0, mBitmapBg.getWidth(), mBitmapBg.getHeight());
+        Rect mDestRectBg = new Rect(0, 0, (int) wSize, (int) hSize);
+        canvas.drawBitmap(mBitmapBg, mSrcRectBg, mDestRectBg, mPaint);
         Rect mSrcRectZipperBg = new Rect(0, 0, mBitmapZipperBg.getWidth(), mBitmapZipperBg.getHeight());
         Rect mDestRectZipperBg = new Rect(0, 0, (int) wSize, (int) hSize);
         canvas.drawBitmap(mBitmapZipperBg, mSrcRectZipperBg, mDestRectZipperBg, mPaint);
@@ -252,7 +254,6 @@ public class ZipperScreenLockView extends View {
 
         canvas.drawBitmap(mBitmapZipper, (float) (wSize / 2 - mBitmapZipper.getWidth() / 2), 0f, mPaint);
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
