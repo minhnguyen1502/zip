@@ -19,26 +19,32 @@ public class SettingActivity extends Activity {
     private Context mContext = null;
     TextView tv_status;
     int choser;
-    RelativeLayout playico, rateus, aboutus, disable;
-
+    RelativeLayout playico,rateus,aboutus,disable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setings);
-
         mContext = this;
 
         SharedPreferencesUtil.init(mContext);
-        tv_status = findViewById(R.id.text_en);
-        disable = findViewById(R.id.disablescreenlock);
-        playico = findViewById(R.id.playicon);
-        rateus = findViewById(R.id.rateus);
-        aboutus = findViewById(R.id.aboutus);
+        tv_status = (TextView) findViewById(R.id.text_en);
+        disable = (RelativeLayout) findViewById(R.id.disablescreenlock);
+        playico = (RelativeLayout) findViewById(R.id.playicon);
+        rateus = (RelativeLayout) findViewById(R.id.rateus);
+        aboutus = (RelativeLayout) findViewById(R.id.aboutus);
 
 
-        mSwitchd = this.findViewById(R.id.switch_locksetting);
+        mSwitchd = findViewById(R.id.switch_locksetting);
+        mSwitchd.setTextOn("yes");
+        mSwitchd.setTextOff("no");
         boolean lockState = SharedPreferencesUtil.get(Lockscreen.ISLOCK);
-        mSwitchd.setChecked(lockState);
+        if (lockState) {
+            mSwitchd.setChecked(true);
+
+        } else {
+            mSwitchd.setChecked(false);
+
+        }
 
         mSwitchd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -77,6 +83,19 @@ public class SettingActivity extends Activity {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.topandnewapps.newyearzipperlock"));
                 startActivity(i);
+
+
+            }
+        });
+
+        aboutus.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+
+                Intent in = new Intent(getApplicationContext(), Developerintro.class);
+                startActivity(in);
 
 
             }

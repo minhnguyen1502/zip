@@ -6,6 +6,9 @@ import android.content.Intent;
 import com.example.zipservice.service.LockscreenService;
 import com.example.zipservice.service.LockscreenViewService;
 
+/**
+ * Created by mugku on 15. 5. 20..
+ */
 public class Lockscreen {
     private Context mContext = null;
     public static final String ISSOFTKEY = "ISSOFTKEY";
@@ -32,7 +35,6 @@ public class Lockscreen {
     }
 
     public void startLockscreenService() {
-        SharedPreferencesUtil.init(mContext);
         Intent startLockscreenIntent =  new Intent(mContext, LockscreenService.class);
 //        startLockscreenIntent.putExtra(LockscreenService.LOCKSCREENSERVICE_FIRST_START, true);
         mContext.startService(startLockscreenIntent);

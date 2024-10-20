@@ -1,6 +1,8 @@
 package com.example.zipservice.service;
 
+import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,8 +12,11 @@ import android.os.IBinder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+
 import com.example.zipservice.LockscreenActivity;
 import com.example.zipservice.LockscreenUtil;
+import com.example.zipservice.R;
 
 /**
  * Created by mugku on 15. 5. 20..
@@ -21,6 +26,7 @@ public class LockscreenService extends Service {
     //    public static final String LOCKSCREENSERVICE_FIRST_START = "LOCKSCREENSERVICE_FIRST_START";
     private int mServiceStartId = 0;
     private Context mContext = null;
+    private static final String CHANNEL_ID = "MyServiceChannel";
 
 
     private BroadcastReceiver mLockscreenReceiver = new BroadcastReceiver() {
@@ -53,10 +59,17 @@ public class LockscreenService extends Service {
     }
 
 
+    @SuppressLint("ForegroundServiceType")
     @Override
     public void onCreate() {
         super.onCreate();
         mContext = this;
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Service Running")
+                .setContentText("Đang mở Activity...")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .build();
+        startForeground(1, notification);
     }
 
 

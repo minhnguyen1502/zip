@@ -127,9 +127,9 @@ public class ZipperScreenLockView extends View {
         mBitmapZipperLeft = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.row_left_1)).getBitmap();
         mBitmapZipperRight = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.row_right_1)).getBitmap();
         mBitmapZipperBg = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.bg)).getBitmap();
-        mBitmapZipperMask = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.mash)).getBitmap();
+        mBitmapZipperMask = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.bg_mask2__2___1_)).getBitmap();
         mBitmapRow = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.row_1__1_)).getBitmap();
-        mBitmapBg = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.bg_2)).getBitmap();
+        mBitmapBg = ((BitmapDrawable) context.getResources().getDrawable(R.drawable.img_default)).getBitmap();
     }
 
     /*-------------------------Set data for zipper---------------------------------------------------------------*/

@@ -2,28 +2,46 @@ package com.example.zipservice.service;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PixelFormat;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.example.zipservice.Lockscreen;
 import com.example.zipservice.LockscreenUtil;
+import com.example.zipservice.PowerUtil;
 import com.example.zipservice.R;
 import com.example.zipservice.SharedPreferencesUtil;
+import com.example.zipservice.TimeChangeReceiver;
 
+
+/**
+ * Created by mugku on 15. 5. 20..
+ */
 public class LockscreenViewService extends Service {
+    private RelativeLayout batteryImg;
+
+    private boolean isPowerReceiverRegistered;
+    private boolean isTimeReceiverRegistered;
+    private TimeChangeReceiver timeChangeReceiver;
+    private TextView tim, date,charger,battery,tvv,smss,ampm;
+    private Typeface tf,uf;
     private Context mContext = null;
     private LayoutInflater mInflater = null;
     private View mLockscreenView = null;
@@ -72,6 +90,8 @@ public class LockscreenViewService extends Service {
         super.onCreate();
         mContext = this;
         SharedPreferencesUtil.init(mContext);
+        attachLockScreenView();
+
 //        sIsSoftKeyEnable = SharedPreferencesUtil.get(Lockscreen.ISSOFTKEY);
     }
 
@@ -92,6 +112,7 @@ public class LockscreenViewService extends Service {
             initState();
             initView();
             attachLockScreenView();
+
         }
         return LockscreenViewService.START_NOT_STICKY;
     }
@@ -116,13 +137,12 @@ public class LockscreenViewService extends Service {
             mParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                    WindowManager.LayoutParams.TYPE_PHONE,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                             | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                             | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD,
                     PixelFormat.TRANSLUCENT);
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (mIsLockEnable && mIsSoftkeyEnable) {
                 mParams.flags = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
@@ -189,11 +209,29 @@ public class LockscreenViewService extends Service {
     }
 
 
-    @SuppressLint("ClickableViewAccessibility")
     private void settingLockView() {
 
+
+        tf = Typeface.createFromAsset(getAssets(),"roboto.ttf");
+        uf = Typeface.createFromAsset(getAssets(),"roboto.ttf");
+        date=(TextView) mLockscreenView.findViewById(R.id.tv_date);
+        tim=(TextView)mLockscreenView.findViewById(R.id.tv_time);
+        ampm=(TextView)mLockscreenView.findViewById(R.id.tv_ampm);
+        charger = (TextView)mLockscreenView.findViewById(R.id.charger);
+        battery = (TextView)mLockscreenView.findViewById(R.id.bettry);
+        tim.setTypeface(tf);
+        date.setTypeface(uf);
+        ampm.setTypeface(uf);
+        registerReceiver(mbatinforeceiver, new IntentFilter(
+                Intent.ACTION_BATTERY_CHANGED));
+        isPowerReceiverRegistered=true;
         IntentFilter localIntentFilter1 = new IntentFilter();
         localIntentFilter1.addAction("android.intent.action.TIME_TICK");
+
+        timeChangeReceiver = new TimeChangeReceiver(tim, date,ampm);
+        registerReceiver(timeChangeReceiver, localIntentFilter1);
+        isTimeReceiverRegistered = true;
+
 
         zipImageView = (ImageView)mLockscreenView.findViewById(R.id.zipImageView);
         zipImageView.setBackgroundResource(IMAGE_UNZIP[0]);
@@ -284,6 +322,35 @@ public class LockscreenViewService extends Service {
 
     }
 
+    public BroadcastReceiver mbatinforeceiver = new BroadcastReceiver() {
+        @SuppressWarnings("static-access")
+        public void onReceive(Context c, Intent i) {
+
+            int level = i.getIntExtra("level", 0);
+
+            battery.setText("" + Integer.toString(level) + "%");
+            battery.setTypeface(tf,tf.BOLD);
+            if (i.getAction().equals("android.intent.action.BATTERY_CHANGED"))
+            {
+                if(PowerUtil.isConnected(c))
+                {
+                    charger.setBackgroundResource(R.drawable.battery_plugin);
+
+                }
+                else
+                {
+                    charger.setBackgroundResource(R.drawable.charger);
+
+
+                }
+
+
+            }
+
+        }
+
+    };
+
     /*Changing Frames of Zipper*/
     private void setImage(int paramInt) {
         switch (paramInt) {
@@ -346,4 +413,22 @@ public class LockscreenViewService extends Service {
                 return;
         }
     }
+    class StateListener extends PhoneStateListener {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            super.onCallStateChanged(state, incomingNumber);
+            switch (state) {
+                case TelephonyManager.CALL_STATE_RINGING:
+                    dettachLockScreenView();
+                    break;
+                case TelephonyManager.CALL_STATE_OFFHOOK:
+                    System.out.println("call Activity off hook");
+                    dettachLockScreenView();
+                    break;
+                case TelephonyManager.CALL_STATE_IDLE:
+                    dettachLockScreenView();
+                    break;
+            }
+        }
+    };
 }
