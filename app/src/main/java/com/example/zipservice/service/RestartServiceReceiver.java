@@ -11,18 +11,15 @@ public class RestartServiceReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
-
-        if (Intent.ACTION_SCREEN_ON.equals(action)) {
-            Log.d(TAG, "Screen turned on - starting LockscreenService");
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Log.d(TAG, "Boot completed - starting LockscreenService");
             Intent serviceIntent = new Intent(context, LockscreenService.class);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent);
+                context.startForegroundService(serviceIntent);  // Use startForegroundService() for Android 8.0+
             } else {
                 context.startService(serviceIntent);
             }
         }
     }
-
 }

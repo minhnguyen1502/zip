@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.zipservice.LockApplication;
 import com.example.zipservice.LockScreenActivity;
@@ -118,14 +117,12 @@ public class LockscreenService extends Service {
                 .setContentIntent(contentIntent)
                 .setOngoing(true);
 
-        // Kiểm tra phiên bản Android và thiết lập kênh thông báo nếu cần thiết
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            builder.setChannelId("default"); // ID kênh phải trùng với ID kênh được tạo
+            builder.setChannelId("default");
         }
 
         Notification notification = builder.build();
 
-        // Hiển thị thông báo
         mNM.notify(((LockApplication) getApplication()).notificationId, notification);
         return notification;
     }
