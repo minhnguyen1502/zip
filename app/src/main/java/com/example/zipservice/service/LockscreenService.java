@@ -101,14 +101,7 @@ public class LockscreenService extends Service {
         Intent startLockscreenActIntent = new Intent(mContext, LockScreenActivity.class);
         startLockscreenActIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(startLockscreenActIntent);
-        Toast.makeText(mContext, "start", Toast.LENGTH_SHORT).show();
     }
-
-    /**
-     * Show a notification while this service is running.
-     *
-     * @return
-     */
 
     private Notification showNotification() {
         CharSequence text = "Running";

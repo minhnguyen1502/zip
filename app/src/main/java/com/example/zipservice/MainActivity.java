@@ -1,7 +1,9 @@
 package com.example.zipservice;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ToggleButton;
 
@@ -26,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-
+        Button preview = (Button) findViewById(R.id.preview);
+        preview.setOnClickListener(v -> startActivity(new Intent(this, PreviewActivity.class)));
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {

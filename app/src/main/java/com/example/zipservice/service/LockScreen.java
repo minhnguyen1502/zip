@@ -11,10 +11,6 @@ public class LockScreen {
     Context context;
     boolean disableHomeButton=false;
 
-
-    SharedPreferences prefs = null;
-
-
     public static LockScreen getInstance() {
         if(singleton==null){
             singleton = new LockScreen();
