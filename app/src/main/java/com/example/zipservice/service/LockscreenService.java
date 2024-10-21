@@ -1,46 +1,35 @@
 package com.example.zipservice.service;
 
 import android.annotation.SuppressLint;
-import android.app.KeyguardManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
-import androidx.core.app.NotificationCompat;
-
-import com.example.zipservice.LockscreenActivity;
-import com.example.zipservice.LockscreenUtil;
+import com.example.zipservice.LockApplication;
+import com.example.zipservice.LockScreenActivity;
+import com.example.zipservice.MainActivity;
 import com.example.zipservice.R;
 
-/**
- * Created by mugku on 15. 5. 20..
- */
 public class LockscreenService extends Service {
     private final String TAG = "LockscreenService";
-    //    public static final String LOCKSCREENSERVICE_FIRST_START = "LOCKSCREENSERVICE_FIRST_START";
-    private int mServiceStartId = 0;
     private Context mContext = null;
-    private static final String CHANNEL_ID = "MyServiceChannel";
-
+    private NotificationManager mNM;
 
     private BroadcastReceiver mLockscreenReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (null != context) {
                 if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-                    Intent startLockscreenIntent = new Intent(mContext, LockscreenViewService.class);
-                    stopService(startLockscreenIntent);
-                    TelephonyManager tManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                    boolean isPhoneIdle = tManager.getCallState() == TelephonyManager.CALL_STATE_IDLE;
-                    if (isPhoneIdle) {
-                        startLockscreenActivity();
-                    }
+                    startLockscreenActivity();
                 }
             }
         }
@@ -59,74 +48,42 @@ public class LockscreenService extends Service {
     }
 
 
-    @SuppressLint("ForegroundServiceType")
     @Override
     public void onCreate() {
         super.onCreate();
         mContext = this;
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Service Running")
-                .setContentText("Đang mở Activity...")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .build();
-        startForeground(1, notification);
+        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        createNotificationChannel();
+        notification = showNotification();
     }
 
+    private void createNotificationChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "default",
+                    "Lockscreen Service",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Channel for Lockscreen Service notifications");
+            mNM.createNotificationChannel(channel);
+        }
+    }
+    Notification notification ;
 
+    @SuppressLint("ForegroundServiceType")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mServiceStartId = startId;
         stateRecever(true);
+        showNotification();
+        startForeground(((LockApplication) getApplication()).notificationId, notification);
         Intent bundleIntet = intent;
         if (null != bundleIntet) {
-            startLockscreenActivity();
+            Log.d(TAG, TAG + " onStartCommand intent  existed");
         } else {
             Log.d(TAG, TAG + " onStartCommand intent NOT existed");
         }
-        setLockGuard();
-        return LockscreenService.START_STICKY;
+        return START_STICKY;
     }
-
-
-    private void setLockGuard() {
-        initKeyguardService();
-        if (!LockscreenUtil.getInstance(mContext).isStandardKeyguardState()) {
-            setStandardKeyguardState(false);
-        } else {
-            setStandardKeyguardState(true);
-        }
-    }
-
-    private KeyguardManager mKeyManager = null;
-    private KeyguardManager.KeyguardLock mKeyLock = null;
-
-    private void initKeyguardService() {
-        if (null != mKeyManager) {
-            mKeyManager = null;
-        }
-        mKeyManager =(KeyguardManager)getSystemService(mContext.KEYGUARD_SERVICE);
-        if (null != mKeyManager) {
-            if (null != mKeyLock) {
-                mKeyLock = null;
-            }
-            mKeyLock = mKeyManager.newKeyguardLock(mContext.KEYGUARD_SERVICE);
-        }
-    }
-
-    private void setStandardKeyguardState(boolean isStart) {
-        if (isStart) {
-            if(null != mKeyLock){
-                mKeyLock.reenableKeyguard();
-            }
-        }
-        else {
-
-            if(null != mKeyManager){
-                mKeyLock.disableKeyguard();
-            }
-        }
-    }
-
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -137,13 +94,47 @@ public class LockscreenService extends Service {
     @Override
     public void onDestroy() {
         stateRecever(false);
-        setStandardKeyguardState(true);
+        mNM.cancel(((LockApplication) getApplication()).notificationId);
     }
 
     private void startLockscreenActivity() {
-        Intent startLockscreenActIntent = new Intent(mContext, LockscreenActivity.class);
+        Intent startLockscreenActIntent = new Intent(mContext, LockScreenActivity.class);
         startLockscreenActIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(startLockscreenActIntent);
+        Toast.makeText(mContext, "start", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Show a notification while this service is running.
+     *
+     * @return
+     */
+
+    private Notification showNotification() {
+        CharSequence text = "Running";
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), PendingIntent.FLAG_IMMUTABLE);
+
+        Notification.Builder builder = new Notification.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker(text)
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle(getText(R.string.app_name))
+                .setContentText(text)
+                .setContentIntent(contentIntent)
+                .setOngoing(true);
+
+        // Kiểm tra phiên bản Android và thiết lập kênh thông báo nếu cần thiết
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            builder.setChannelId("default"); // ID kênh phải trùng với ID kênh được tạo
+        }
+
+        Notification notification = builder.build();
+
+        // Hiển thị thông báo
+        mNM.notify(((LockApplication) getApplication()).notificationId, notification);
+        return notification;
     }
 
 }

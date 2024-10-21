@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -11,10 +11,14 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.PHONE_STATE_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission
+        android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
+        android:name=".LockApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,50 +28,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZipService"
         tools:targetApi="31">
-        <activity
-            android:name=".SettingActivity"
-            android:excludeFromRecents="true"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".LockscreenActivity"
-            android:excludeFromRecents="true"
-            android:screenOrientation="portrait" />
-
-        <service android:name=".service.LockscreenViewService" />
-        <service android:name=".service.LockscreenService" />
 
         <activity
-            android:name=".Developerintro"
-            android:excludeFromRecents="true"
-            android:parentActivityName=".SettingActivity"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".SettingActivity" />
-        </activity>
-        <activity
-            android:name=".Splash"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
-        <activity android:name=".MainActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".test.MyService" />
+        <activity
+            android:name=".LockScreenActivity"
+            android:launchMode="singleInstance"
+            android:showOnLockScreen="true">
 
-        <receiver android:name=".test.BootReceiver"
+        </activity>
+
+        <service android:name=".service.LockscreenService"></service>
+        <receiver
+            android:name=".service.RestartServiceReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>
