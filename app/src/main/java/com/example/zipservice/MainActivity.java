@@ -20,6 +20,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void zipperMoving() {
             }
+
+            @Override
+            public void zipperCancel() {
+
+            }
         });
     }
 }

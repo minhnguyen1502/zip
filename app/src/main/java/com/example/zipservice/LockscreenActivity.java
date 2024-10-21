@@ -14,6 +14,9 @@ import android.widget.RelativeLayout;
 
 import com.example.zipservice.service.LockscreenViewService;
 
+/**
+ * Created by Hammad Shah
+ */
 public class LockscreenActivity extends Activity {
     private final String TAG = "LockscreenActivity";
     private static Context sLockscreenActivityContext = null;
